@@ -7,36 +7,38 @@ import { messages } from '../../helpers/calendar-messages';
 import 'moment/locale/es';
 import { CalendarEvent } from './CalendarEvent';
 import { CalendarModal } from './CalendarModal';
+import { useDispatch, useSelector } from 'react-redux';
+import { uiOpenMOdal } from '../../actions/ui';
+import { eventClearActiveAction, eventSetActive } from '../../actions/events';
+import { AddNewFab } from '../ui/AddNewFab';
+import { DeleteEventFab } from '../ui/DeleteEventFab';
 
 moment.locale('es');
 const localizer = momentLocalizer(moment);
 
-const events = [
-    {
-        title: 'Cumpleaños del rey',
-        start: moment().toDate(),
-        end: moment().add(2, 'hours').toDate(),
-        bgcolor: '#fafafa',
-        notes: 'Compar el pastel',
-        user: {
-            _id: '123',
-            name: 'Benny'
-        }
-    }
-]
 export const CalendarScreen = () => {
+    const dispatch = useDispatch();
+    const { events, activeEvent } = useSelector(state => state.calendar) 
+    
+
     const [lastView, setLastView] = useState( localStorage.getItem('lastView') || 'month')    
+    
     const onDoubleClick = (e) => {
-        console.log('doubleClik', e)
+        dispatch(uiOpenMOdal())
     }
 
     const onSelectEvent = (e) => {
-        console.log('select', e)
+        dispatch(eventSetActive(e));
+        
     }
 
     const onViewChange = (e) => {
         setLastView(e)
         localStorage.setItem('lastView', e)
+    }
+
+    const onSelectSlot = (e) => {
+        dispatch(eventClearActiveAction());
     }
     const eventStyleGetter = (event, start, end, isSelected) => {
         const style = {
@@ -67,7 +69,11 @@ export const CalendarScreen = () => {
                 onSelectEvent={onSelectEvent}
                 onView={ onViewChange }
                 view={lastView}
+                onSelectSlot={ onSelectSlot }
+                selectable={true}
                 />
+                { activeEvent && <DeleteEventFab />}
+                <AddNewFab />
                 <CalendarModal />
         </div>
     )
